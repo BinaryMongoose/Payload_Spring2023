@@ -6,6 +6,9 @@
 
 Elijah Mountz
 2/13/2023
+
+TODO: Update tests.txt to tests.csv
+
 *************************************************/
 #include <SPI.h>
 #include <SD.h>
@@ -89,6 +92,8 @@ void loop() {
 
     Serial.println(bme.temperature);
     Serial.println(currentMillis);
+
+    // TODO: Logic here isn't working.
     if (currentMillis >= HALF_MIN) {
         currentFile.close();
         Serial.println("File closed.");
