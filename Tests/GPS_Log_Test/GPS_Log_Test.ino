@@ -17,15 +17,18 @@ Adafruit_GPS GPS(&GPSSerial);
 
 uint32_t timer = millis();
 
+int led = LED_BUILTIN;
 
 /*** File Stuff ***/
 File test;
 
 unsigned long previousMillis = 0;  // will store last time LED was updated
-const long interval = 15000;  // interval at which to save (15 seconds)
+const long interval = 10000;  // interval at which to save (10 seconds)
 
 void setup() {
   Serial.begin(115200);
+
+  pinMode(led, OUTPUT);
 
   // wait for hardware serial to appear
   while (!Serial) delay(10);
@@ -36,12 +39,19 @@ void setup() {
   Serial.println("Setting up SD...");
   if(!SD.begin(4)) {
     Serial.println("SD Setup failed.");
-    delay(10);
+    while(1) {
+      digitalWrite(led, HIGH);
+      delay(100);
+      digitalWrite(led, LOW);
+      delay(100);
+    };
+  } else {
+    Serial.print("SD good!");
   }
 
-  test = SD.open("tests.txt", FILE_WRITE);
+  test = SD.open("TEST.CSV", FILE_WRITE);
 
-  test.println("===============");
+  test.println("latitude,longitude,time");
 
   // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
@@ -86,26 +96,43 @@ void loop() {
       Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
       Serial.print(", ");
       Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
-      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
-      Serial.print("Angle: "); Serial.println(GPS.angle);
       Serial.print("Altitude: "); Serial.println(GPS.altitude);
       Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
       Serial.print("Antenna status: "); Serial.println((int)GPS.antenna);
 
-      test.print("Location: ");
-      test.print(GPS.latitude, 4); test.print(GPS.lat);
-      test.print(", ");
-      test.print(GPS.longitude, 4); test.println(GPS.lon);
-      test.print("Speed (knots): "); test.println(GPS.speed * 1.151);
+      test.print(GPS.latitudeDegrees, 6); test.print(GPS.lat);
+      test.print(",");
+      test.print(GPS.longitudeDegrees, 6); test.print(GPS.lon);
+      test.print(",");
+      
+      if (GPS.hour < 10) { test.print('0'); }
+        test.print(GPS.hour, DEC); test.print('-');
+      if (GPS.minute < 10) { test.print('0'); }
+        test.print(GPS.minute, DEC); test.print('-');
+      if (GPS.seconds < 10) { test.print('0'); }
+        test.print(GPS.seconds, DEC);
+      if (GPS.milliseconds < 10) {
+        test.print("00");
+      } else if (GPS.milliseconds > 9 && GPS.milliseconds < 100) {
+        test.print("0");
+      }
+      test.println(GPS.milliseconds);
+
+      test.flush();
+
     } else {
       Serial.println("No fix.");
     }
   }
+  /*
   if (currentMillis - previousMillis >= interval) {
+    digitalWrite(led, HIGH);
     previousMillis = currentMillis;
     test.close();
-    test = SD.open("tests.txt", FILE_WRITE);
+    test = SD.open("TEST.CSV", FILE_WRITE);
     Serial.println("Test closed and reopned!");
+    digitalWrite(led, LOW);
   }
+  */
 }
 
