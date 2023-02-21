@@ -17,24 +17,18 @@ Adafruit_GPS GPS(&GPSSerial);
 
 uint32_t timer = millis();
 
-int led = LED_BUILTIN;
 
 /*** File Stuff ***/
 File test;
 
-unsigned long previousMillis = 0;  // will store last time LED was updated
-const long interval = 10000;  // interval at which to save (10 seconds)
+/*** Misc. ***/
+int led = LED_BUILTIN;
+
 
 void setup() {
   Serial.begin(115200);
 
   pinMode(led, OUTPUT);
-
-  // wait for hardware serial to appear
-  while (!Serial) delay(10);
-
-  // 9600 baud is the default rate for the Ultimate GPS
-  GPSSerial.begin(9600);
 
   Serial.println("Setting up SD...");
   if(!SD.begin(4)) {
@@ -44,14 +38,28 @@ void setup() {
       delay(100);
       digitalWrite(led, LOW);
       delay(100);
-    };
+    }
   } else {
-    Serial.print("SD good!");
+    Serial.println("SD good!");
   }
 
   test = SD.open("TEST.CSV", FILE_WRITE);
+  if(!test) {
+    Serial.println(F("Failed to open log file!"));
+    while(1) {
+      digitalWrite(led, HIGH);
+      delay(100);
+      digitalWrite(led, LOW);
+      delay(100);
+    }
+  }
+
 
   test.println("latitude,longitude,time");
+  test.flush();
+
+  // 9600 baud is the default rate for the Ultimate GPS
+  GPSSerial.begin(9600);
 
   // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
@@ -89,50 +97,33 @@ void loop() {
       return; // we can fail to parse a sentence in which case we should just wait for another
   }
 
-  if (millis() - timer > 2000) {
+  if (millis() - timer > 5000) {
     timer = millis(); // reset the timer
     if (GPS.fix) {
       Serial.print("Location: ");
-      Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
+      Serial.print(GPS.latitude, 10); Serial.print(GPS.lat);
       Serial.print(", ");
-      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
+      Serial.print(GPS.longitude, 10); Serial.println(GPS.lon);
       Serial.print("Altitude: "); Serial.println(GPS.altitude);
       Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
       Serial.print("Antenna status: "); Serial.println((int)GPS.antenna);
 
-      test.print(GPS.latitudeDegrees, 6); test.print(GPS.lat);
+      test.print(GPS.latitudeDegrees, 10); test.print(GPS.lat);
       test.print(",");
-      test.print(GPS.longitudeDegrees, 6); test.print(GPS.lon);
+      test.print(GPS.longitudeDegrees, 10); test.print(GPS.lon);
       test.print(",");
       
       if (GPS.hour < 10) { test.print('0'); }
-        test.print(GPS.hour, DEC); test.print('-');
+      test.print(GPS.hour, DEC); test.print(':');
       if (GPS.minute < 10) { test.print('0'); }
-        test.print(GPS.minute, DEC); test.print('-');
+      test.print(GPS.minute, DEC); test.print(':');
       if (GPS.seconds < 10) { test.print('0'); }
-        test.print(GPS.seconds, DEC);
-      if (GPS.milliseconds < 10) {
-        test.print("00");
-      } else if (GPS.milliseconds > 9 && GPS.milliseconds < 100) {
-        test.print("0");
-      }
-      test.println(GPS.milliseconds);
-
+      test.println(GPS.seconds, DEC);
       test.flush();
 
     } else {
       Serial.println("No fix.");
     }
   }
-  /*
-  if (currentMillis - previousMillis >= interval) {
-    digitalWrite(led, HIGH);
-    previousMillis = currentMillis;
-    test.close();
-    test = SD.open("TEST.CSV", FILE_WRITE);
-    Serial.println("Test closed and reopned!");
-    digitalWrite(led, LOW);
-  }
-  */
 }
 
