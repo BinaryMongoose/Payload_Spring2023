@@ -1,7 +1,4 @@
 #include <Adafruit_GPS.h>
-#include <Adafruit_PMTK.h>
-#include <NMEA_data.h>
-
 #include <SD.h>
 #include <SPI.h>
 
@@ -24,59 +21,27 @@ File test;
 /*** Misc. ***/
 int led = LED_BUILTIN;
 
-
 void setup() {
   Serial.begin(115200);
+  Serial.println(F(" ===== Welcome to GPS Log test. ===== \n"));
 
-  pinMode(led, OUTPUT);
-
-  Serial.println("Setting up SD...");
   if(!SD.begin(4)) {
-    Serial.println("SD Setup failed.");
-    while(1) {
-      digitalWrite(led, HIGH);
-      delay(100);
-      digitalWrite(led, LOW);
-      delay(100);
-    }
+    halt(F("Failed to setup SD card!"));
   } else {
     Serial.println("SD good!");
   }
 
   test = SD.open("TEST.CSV", FILE_WRITE);
   if(!test) {
-    Serial.println(F("Failed to open log file!"));
-    while(1) {
-      digitalWrite(led, HIGH);
-      delay(100);
-      digitalWrite(led, LOW);
-      delay(100);
-    }
+    halt(F("Failed to open log file!"));
   }
 
-
-  test.println("latitude,longitude,time");
+  test.println("latitude,longitude,speed,time");
   test.flush();
 
-  // 9600 baud is the default rate for the Ultimate GPS
-  GPSSerial.begin(9600);
+  setup_gps();
 
-  // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  // For parsing data, we don't suggest using anything but either RMC only or RMC+GGA since
-  // the parser doesn't care about other sentences at this time
-  // Set the update rate
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
-  // For the parsing code to work nicely and have time to sort thru the data, and
-  // print it out we don't suggest using anything higher than 1 Hz
-
-  // Request updates on antenna status, comment out to keep quiet
-  GPS.sendCommand(PGCMD_ANTENNA);
-
-  delay(1000);
-
-  // Ask for firmware version
-  GPSSerial.println(PMTK_Q_RELEASE);
+  pinMode(led, OUTPUT);
 }
 
 void loop() {
@@ -112,6 +77,8 @@ void loop() {
       test.print(",");
       test.print(GPS.longitudeDegrees, 10); test.print(GPS.lon);
       test.print(",");
+      test.print(GPS.speed * 1.151, 5);
+      test.print(",");
       
       if (GPS.hour < 10) { test.print('0'); }
       test.print(GPS.hour, DEC); test.print(':');
@@ -127,3 +94,29 @@ void loop() {
   }
 }
 
+void halt(const __FlashStringHelper *error){
+  Serial.println(error);
+  while(1) {
+    digitalWrite(led, HIGH);
+    delay(100);
+    digitalWrite(led, LOW);
+    delay(100);
+  }
+}
+
+void setup_gps(){
+  // 9600 baud is the default rate for the Ultimate GPS
+  GPSSerial.begin(9600);
+
+  // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  // For parsing data, we don't suggest using anything but either RMC only or RMC+GGA since
+  // the parser doesn't care about other sentences at this time
+  // Set the update rate
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate. DOn't use anything lower.
+
+  delay(1000);  // Wait for everyone to catch up.
+  
+  // Ask for firmware version
+  GPSSerial.println(PMTK_Q_RELEASE);
+}
