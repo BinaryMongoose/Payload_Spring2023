@@ -109,7 +109,7 @@ void setup() {
   pinMode(led, OUTPUT);
 
   delay(10000);  // Give the board some time to rest. 
-  Serial.println("Let's GOOO!");
+  Serial.println("Let's Go!");
 }
 
 void loop() {
@@ -139,7 +139,7 @@ void loop() {
     */
 
 
-    currentFile.print(GPS.seconds, DEC);
+    //currentFile.print(GPS.seconds, DEC);
     currentFile.print(",");
     currentFile.print(temp.temperature);
     currentFile.print(",");
