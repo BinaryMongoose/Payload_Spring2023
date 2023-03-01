@@ -86,15 +86,13 @@ void setup() {
   ltr.configInterrupt(true, LTR390_MODE_UVS);
 
   // ISM-330 Setup
-  if (!ism.begin()) {
+  if (!ism.begin_I2C()) {
     halt(F("Couldn't find ISM-330!"));
   } else {
     Serial.println(" :) ISM-330 Good!");
   }
 
-  ism330dhcx.setAccelRange(LSM6DS_ACCEL_RANGE_16_G);
-
-
+  ism.setAccelRange(LSM6DS_ACCEL_RANGE_16_G);
 
   /***
    Creating Initial file. 
@@ -120,7 +118,7 @@ void setup() {
   /***
   Setting up onboard LED. 
    - Will change to be a GPS FIX LED,
-   - and a RGB LED later. 
+   - and a RGB LED later.
   ***/
   pinMode(led, OUTPUT);
 
@@ -153,11 +151,12 @@ void loop() {
     currentFile.print(",");
     currentFile.print(temp.temperature);
     currentFile.print(",");
-    currentFile.print(accel.acceleration.z);
+    currentFile.print(accel.acceleration.x);
     currentFile.print(",");
     currentFile.print(accel.acceleration.y);
     currentFile.print(",");
     currentFile.print(accel.acceleration.z);
+    currentFile.print(",");
     currentFile.flush();
 
     if (GPS.fix) {
@@ -172,15 +171,15 @@ void loop() {
 
       currentFile.print(time);
       currentFile.print(",");
-      currentFile.print(GPS.latitudeDegrees, 10); currentFile.print(GPS.lat);
+      currentFile.print(GPS.latitudeDegrees, 6); currentFile.print(GPS.lat);
       currentFile.print(",");
-      currentFile.print(GPS.longitudeDegrees, 10); currentFile.print(GPS.lon);
+      currentFile.print(GPS.longitudeDegrees, 6); currentFile.print(GPS.lon);
       currentFile.print(",");
-      currentFile.println(GPS.altitude);
+      currentFile.print(GPS.altitude);
       currentFile.print(",");
       currentFile.print(GPS.speed * 1.151);
       currentFile.print(",");
-      currentFile.print((int)GPS.satellites);
+      currentFile.println((int)GPS.satellites);
       currentFile.flush();
 
     } else {
