@@ -20,6 +20,7 @@ uint32_t timer = millis();
 ***/
 File currentFile;
 
+
 /*** 
  Sensors 
 ***/
@@ -28,10 +29,13 @@ File currentFile;
 Adafruit_BME680 bme;
 Adafruit_SHT4x sht4;
 
+
 /*** 
  Misc. 
 ***/
 int led = LED_BUILTIN;
+int diff = -7;
+
 
 
 void setup() {
@@ -89,7 +93,7 @@ void setup() {
     halt(F("Failed create open log file!"));
   }
 
-  currentFile.println("time,sht_temp,bme_temp,bme_alt,latitude,longitude,speed");
+  currentFile.println("time,sht_temp,bme_temp,bme_alt,latitude,longitude,gps_alt,speed,sats");
   currentFile.flush();
 
 
@@ -115,13 +119,10 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis();
 
-  // if a sentence is received, we can check the checksum, parse it...
+  GPS.read();
+
   if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences!
-    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
-    if (!GPS.parse(GPS.lastNMEA())) // Sets the newNMEAreceived() flag to false
-      return; // we can fail to parse a sentence in which case we should just wait for another
+    GPS.parse(GPS.lastNMEA());
   }
 
   if (millis() - timer > 5000) {
@@ -139,7 +140,7 @@ void loop() {
     */
 
 
-    //currentFile.print(GPS.seconds, DEC);
+    // currentFile.print(GPS.seconds, DEC);
     currentFile.print(",");
     currentFile.print(temp.temperature);
     currentFile.print(",");
@@ -149,7 +150,23 @@ void loop() {
     currentFile.print(",");
     currentFile.flush();
 
-    int hour  = GPS.hour - 7;
+    int hour = GPS.hour + diff;
+
+    if (hour < 0) {
+      hour = 24+hour;
+    }
+    if (hour > 23) {
+      hour = 24-hour;
+    }
+
+    // Handle when hour are past 12 by subtracting 12 hour (1200 value).
+    if (hour > 12) {
+      hour -= 12;
+    }
+    // Handle hour 0 (midnight) being shown as 12.
+    else if (hour == 0) {
+      hour += 12;
+    }
 
     Serial.print("Time: ");
     Serial.println(hour);
@@ -167,6 +184,10 @@ void loop() {
       currentFile.print(GPS.longitudeDegrees, 10); currentFile.print(GPS.lon);
       currentFile.print(",");
       currentFile.println(GPS.speed * 1.151, 5);
+      currentFile.print(",");
+      currentFile.println((int)GPS.satellites);
+      currentFile.print(",");
+      currentFile.println(GPS.altitude);
       currentFile.flush();
 
     } else {
