@@ -25,10 +25,9 @@ File currentFile;
  Sensors 
 ***/
 #define SEALEVELPRESSURE_HPA (1013.25)  // We will later reverse engineer altitude from GPS to get the exact sea level pressure.
-
 Adafruit_BME680 bme;
-Adafruit_SHT4x sht4;
-
+Adafruit_LTR390 ltr;
+Adafruit_ISM330DHCX ism;
 
 /*** 
  Misc. 
@@ -60,28 +59,41 @@ void setup() {
    Sensors
   ***/
 
-  Serial.println("\n=== Sensors ===\n");
+  Serial.println("\n=== Sensors ===");
 
-  if (!sht4.begin()) {
-    halt(F("Failed to setup SHT-40!"));
-  } else {
-    Serial.println(" :) SHT-40 Good!");
-  }
-
-  sht4.setPrecision(SHT4X_MED_PRECISION);
-  sht4.setHeater(SHT4X_NO_HEATER);
-
-
+  // BME-680 Setup
   if (!bme.begin()) {
     halt(F("Failed to setip BME-680!"));
   } else {
     Serial.println(" :) BME-680 Good!");
   }
-
   bme.setTemperatureOversampling(BME680_OS_8X);
   bme.setHumidityOversampling(BME680_OS_2X);
   bme.setPressureOversampling(BME680_OS_4X);
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
+
+  // LTR-390 Setup
+  if (!ltr.begin()) {
+    halt(F("Couldn't find LTR-390!"));
+  } else {
+    Serial.println(" :) LTR-390 Good!");
+  }
+
+  ltr.setMode(LTR390_MODE_UVS);
+  ltr.setGain(LTR390_GAIN_3);
+  ltr.setResolution(LTR390_RESOLUTION_16BIT);
+  ltr.setThresholds(100, 1000);
+  ltr.configInterrupt(true, LTR390_MODE_UVS);
+
+  // ISM-330 Setup
+  if (!ism.begin()) {
+    halt(F("Couldn't find ISM-330!"));
+  } else {
+    Serial.println(" :) ISM-330 Good!");
+  }
+
+  ism330dhcx.setAccelRange(LSM6DS_ACCEL_RANGE_16_G);
+
 
 
   /***
@@ -93,7 +105,7 @@ void setup() {
     halt(F("Failed create open log file!"));
   }
 
-  currentFile.println("time,sht_temp,bme_temp,bme_alt,latitude,longitude,gps_alt,speed,sats");
+  currentFile.println("time_since_start,bme_temp,bme_alt,uv,ism_temp,acc_x,acc_y,acc_z,gps_time,latitude,longitude,gps_alt,speed,sats");
   currentFile.flush();
 
 
@@ -127,51 +139,30 @@ void loop() {
 
   if (millis() - timer > 5000) {
     timer = millis(); // reset the timer
-    sensors_event_t humidity, temp;
-  
-    uint32_t timestamp = millis();
-    sht4.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
-    /*
-    if (GPS.hour < 10) { currentFile.print('0'); }
-    currentFile.print(GPS.hour, DEC); currentFile.print(':');
-    if (GPS.minute < 10) { currentFile.print('0'); }
-    currentFile.print(GPS.minute, DEC); currentFile.print(':');
-    if (GPS.seconds < 10) { currentFile.print('0'); }
-    */
 
+    sensors_event_t accel, gyro, temp;
+    ism.getEvent(&accel, &gyro, &temp);
 
-    // currentFile.print(GPS.seconds, DEC);
-    currentFile.print(",");
-    currentFile.print(temp.temperature);
+    currentFile.print(millis(), DEC);
     currentFile.print(",");
     currentFile.print(bme.temperature);
     currentFile.print(",");
     currentFile.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
     currentFile.print(",");
+    currentFile.print(ltr.readUVS());
+    currentFile.print(",");
+    currentFile.print(temp.temperature);
+    currentFile.print(",");
+    currentFile.print(accel.acceleration.z);
+    currentFile.print(",");
+    currentFile.print(accel.acceleration.y);
+    currentFile.print(",");
+    currentFile.print(accel.acceleration.z);
     currentFile.flush();
 
-    int hour = GPS.hour + diff;
-
-    if (hour < 0) {
-      hour = 24+hour;
-    }
-    if (hour > 23) {
-      hour = 24-hour;
-    }
-
-    // Handle when hour are past 12 by subtracting 12 hour (1200 value).
-    if (hour > 12) {
-      hour -= 12;
-    }
-    // Handle hour 0 (midnight) being shown as 12.
-    else if (hour == 0) {
-      hour += 12;
-    }
-
-    Serial.print("Time: ");
-    Serial.println(hour);
-
     if (GPS.fix) {
+      String time = get_time();
+
       Serial.print("Location: ");
       Serial.print(GPS.latitude, 10); Serial.print(GPS.lat);
       Serial.print(", ");
@@ -179,15 +170,17 @@ void loop() {
       Serial.print("Altitude: "); Serial.println(GPS.altitude);
       Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
 
+      currentFile.print(time);
+      currentFile.print(",");
       currentFile.print(GPS.latitudeDegrees, 10); currentFile.print(GPS.lat);
       currentFile.print(",");
       currentFile.print(GPS.longitudeDegrees, 10); currentFile.print(GPS.lon);
       currentFile.print(",");
-      currentFile.println(GPS.speed * 1.151, 5);
-      currentFile.print(",");
-      currentFile.println((int)GPS.satellites);
-      currentFile.print(",");
       currentFile.println(GPS.altitude);
+      currentFile.print(",");
+      currentFile.print(GPS.speed * 1.151);
+      currentFile.print(",");
+      currentFile.print((int)GPS.satellites);
       currentFile.flush();
 
     } else {
@@ -223,4 +216,28 @@ void setup_gps(){
   
   // Ask for firmware version
   GPSSerial.println(PMTK_Q_RELEASE);
+}
+
+String get_time(){
+  int hour = GPS.hour + diff;
+
+  if (hour < 0) {
+    hour = 24+hour;
+  }
+  if (hour > 23) {
+    hour = 24-hour;
+  }
+
+  // Handle when hour are past 12 by subtracting 12 hour (1200 value).
+  if (hour > 12) {
+    hour -= 12;
+  }
+  // Handle hour 0 (midnight) being shown as 12.
+  else if (hour == 0) {
+    hour += 12;
+  }
+
+  String time = String(hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
+
+  return time;
 }
