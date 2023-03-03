@@ -1,5 +1,15 @@
 #include "Sensors.h"
 
+// what's the name of the hardware serial port?
+#define GPSSerial Serial1
+
+// Connect to the GPS on the hardware port
+Adafruit_GPS GPS(&GPSSerial);
+
+// Set GPSECHO to 'false' to turn off echoing the GPS data to the Serial console
+// Set to 'true' if you want to debug and listen to the raw GPS sentences
+#define GPSECHO false
+
 /*** 
  Sensors 
 ***/
@@ -12,10 +22,6 @@ int led = LED_BUILTIN;
 int diff = -7;
 
 void setup_sensors(){
-  /***
-   Sensors
-  ***/
-
   Serial.println("\n=== Sensors ===");
 
   // BME-680 Setup
@@ -54,12 +60,36 @@ void setup_sensors(){
   pinMode(led, OUTPUT);
 }
 
-float sensor_readings(String info, Adafruit_GPS GPS, bool logging_gps){
+
+void setup_gps(){
+  /***
+  GPS Setup
+   - ALWAYS DO THIS LAST!
+   - Or else everything will break and be bad. 
+  ***/
+
+  // 9600 baud is the default rate for the Ultimate GPS
+  GPSSerial.begin(9600);
+
+  // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  // For parsing data, we don't suggest using anything but either RMC only or RMC+GGA since
+  // the parser doesn't care about other sentences at this time
+  // Set the update rate
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate. Don't use anything lower.
+
+  delay(1000);  // Wait for everyone to catch up.
+  
+  // Ask for firmware version
+  GPSSerial.println(PMTK_Q_RELEASE);
+}
+
+float sensor_readings(unsigned long time_since_start, String info, Adafruit_GPS GPS, bool logging_gps){
   sensors_event_t accel, gyro, temp;
   ism.getEvent(&accel, &gyro, &temp);
   
   if(info == "time_since_start"){
-    return 0;
+    return time_since_start * 1000;
   } else if (info == "bme_temp") {
     return bme.temperature;
   } else if (info == "bme_alt") {
@@ -77,9 +107,9 @@ float sensor_readings(String info, Adafruit_GPS GPS, bool logging_gps){
   } else if (info == "gps_time" && logging_gps) {
     return get_time(GPS); 
   } else if (info == "latitude" && logging_gps) {
-    return GPS.latitude; 
+    return GPS.latitudeDegrees; 
   } else if (info == "longitude" && logging_gps) {
-    return GPS.longitude; 
+    return GPS.longitudeDegrees; 
   } else if (info == "gps_alt" && logging_gps) {
     return GPS.altitude; 
   } else if (info == "speed" && logging_gps) {

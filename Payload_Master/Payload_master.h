@@ -1,6 +1,5 @@
 /***
-All the libraries we are using. 
+ All the libraries we are using. 
 ***/
-#include <SD.h>
-
 #include "Sensors.h"
+#include "Log.h"
