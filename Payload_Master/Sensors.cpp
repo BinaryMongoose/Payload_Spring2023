@@ -84,7 +84,14 @@ void setup_gps(){
   GPSSerial.println(PMTK_Q_RELEASE);
 }
 
-float sensor_readings(unsigned long time_since_start, String info, Adafruit_GPS GPS, bool logging_gps){
+
+float sensor_readings(unsigned long time_since_start, String info){
+  GPS.read();
+
+  if (GPS.newNMEAreceived()) {
+    GPS.parse(GPS.lastNMEA());
+  }
+
   sensors_event_t accel, gyro, temp;
   ism.getEvent(&accel, &gyro, &temp);
   
@@ -104,17 +111,17 @@ float sensor_readings(unsigned long time_since_start, String info, Adafruit_GPS 
     return accel.acceleration.y;
   } else if (info == "acc_z") {
     return accel.acceleration.x;
-  } else if (info == "gps_time" && logging_gps) {
+  } else if (info == "gps_time" && GPS.fix) {
     return get_time(GPS); 
-  } else if (info == "latitude" && logging_gps) {
+  } else if (info == "latitude" && GPS.fix) {
     return GPS.latitudeDegrees; 
-  } else if (info == "longitude" && logging_gps) {
+  } else if (info == "longitude" && GPS.fix) {
     return GPS.longitudeDegrees; 
-  } else if (info == "gps_alt" && logging_gps) {
+  } else if (info == "gps_alt" && GPS.fix) {
     return GPS.altitude; 
-  } else if (info == "speed" && logging_gps) {
+  } else if (info == "speed" && GPS.fix) {
     return GPS.speed * 1.151; 
-  } else if (info == "sats" && logging_gps) {
+  } else if (info == "sats" && GPS.fix) {
     return GPS.satellites; 
   } else {
     return 0; 

@@ -15,6 +15,6 @@ void setup_sensors();
 void setup_gps();
 void halt(const __FlashStringHelper *error);
 
-float sensor_readings(unsigned long time_since_start, String info, Adafruit_GPS GPS, bool logging_gps);
+float sensor_readings(unsigned long time_since_start, String info);
 float get_time(Adafruit_GPS GPS); 
 #endif

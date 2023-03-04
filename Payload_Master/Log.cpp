@@ -1,8 +1,6 @@
 #include "Log.h"
 #include "Sensors.h"
 
-uint32_t timer = millis();
-
 
 File currentFile;
 
@@ -28,8 +26,10 @@ void setup_sd(String measuring[]){
     halt(F("Failed create open log file!"));
   }
 
-  // currentFile.println("time_since_start,bme_temp,bme_alt,uv,ism_temp,acc_x,acc_y,acc_z,gps_time,latitude,longitude,gps_alt,speed,sats");
-  for(int i = 0; i < (sizeof(measuring)/sizeof(String)); i++) {
+  currentFile.println("Hello World!"); 
+
+  // "time_since_start,bme_temp,bme_alt,uv,ism_temp,acc_x,acc_y,acc_z,gps_time,latitude,longitude,gps_alt,speed,sats"
+  for(int i = 0; i < 1(sizeof(measuring)/sizeof(String)); i++) {
     currentFile.print(String(measuring[i]));
     currentFile.print(",");
   }
@@ -38,10 +38,18 @@ void setup_sd(String measuring[]){
 }
 
 
-void log_file(String measuring[], unsigned long currentMillis, Adafruit_GPS GPS){
-  for (int i = 0; i < (sizeof(measuring)/sizeof(String)); i++){
-    String m = measuring[i];
-    currentFile.print(sensor_readings(currentMillis, m, GPS, false), 8);
-    currentFile.print(",");
+void log_file(String measuring[], unsigned long currentMillis){
+  if(currentFile) {
+    for (int i = 0; i < 14; i++){
+      String m = measuring[i];
+      currentFile.print(sensor_readings(currentMillis, m), 8);
+      currentFile.print(",");
+    }
+
+    currentFile.println();
+    Serial.println("File saved."); 
+    currentFile.flush();
+  } else {
+    Serial.println("COuldn't find currentFile!");
   }
 }

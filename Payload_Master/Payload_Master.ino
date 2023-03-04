@@ -10,8 +10,10 @@ To measure one of these put it into the array measuring. Make sure to put it in 
 want to log the data. 
 The name MUST BE THE SAME CASE! If it says ism_temp, it must be typed ism_temp. 
 */
-String measuring[] = {"time_since_start", "bme_temp", "bme_alt", "uv", "ism_temp", "acc_x", "acc_y" , "acc_z" , "gps_time" , \
+String measuring[14] = {"time_since_start", "bme_temp", "bme_alt", "uv", "ism_temp", "acc_x", "acc_y" , "acc_z" , "gps_time" , \
                       "latitude", "longitude", "gps_alt", "speed", "sats"};
+
+uint32_t log_timer = millis();
 
 void setup() {
   Serial.begin(1115200);
@@ -30,33 +32,12 @@ void setup() {
 }
 
 void loop() {
-  /*unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();
 
-  GPS.read();
+  if (millis() - log_timer > 5000) {
+    log_timer = millis(); // reset the timer
 
-  if (GPS.newNMEAreceived()) {
-    GPS.parse(GPS.lastNMEA());
-  }
-
-  if (millis() - timer > 5000) {
-    timer = millis(); // reset the timer */
-/*
-    if (GPS.fix) {
-      for (int i = 0; i < (sizeof(measuring)/sizeof(String)); i++){
-        String m = measuring[i];
-        currentFile.print(sensor_readings(currentMillis, m, GPS, true), 8);
-        currentFile.print(",");
-      }
-    } else {
-      for (int i = 0; i < (sizeof(measuring)/sizeof(String)); i++){
-        String m = measuring[i];
-        currentFile.print(sensor_readings(currentMillis, m, GPS, false), 8);
-        currentFile.print(",");
-      }
-    } 
-    currentFile.println();
-    Serial.println("File saved."); 
-    currentFile.flush();
+    log_file(measuring, currentMillis); 
     
-  } */
+  }
 }
