@@ -44,7 +44,7 @@ I think you can tell what Feather we used.
 
 ### Sensors
 
-Nothing too extreme here. Some basic things like tempature, humidity, and altitude. (All done by the (BMP388)[https://www.adafruit.com/product/4816] BTW) \
+Nothing too extreme here. Some basic things like tempature, humidity, and altitude. (All done by the [BMP388](https://www.adafruit.com/product/4816) BTW) \
 Ww included some "specialty" sensors, including a [Accelerometer + Gyro](https://www.adafruit.com/product/4502), and a [UV light sensor](https://www.adafruit.com/product/4831). 
 
 The biggest "sensor" was the [GPS](https://www.adafruit.com/product/3133). \
