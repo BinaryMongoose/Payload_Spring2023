@@ -56,7 +56,7 @@ All in all, we will be collecting Temperature inside the box, Altitude, G-Forces
 ### Software
 Now here's my specialty. 
 (If your reading this before we actually finished the software, then enjoy this link)\
-[Link.](https://xkcd.com/750/)
+[Link.](https://xkcd.com/1170/)
 
 
 
