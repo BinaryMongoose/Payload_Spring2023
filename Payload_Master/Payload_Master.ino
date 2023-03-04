@@ -12,13 +12,20 @@ Adafruit_GPS GPS(&GPSSerial);
 // Set to 'true' if you want to debug and listen to the raw GPS sentences
 #define GPSECHO false
 
-uint32_t timer = millis();
 
+// Timers
+uint32_t logTimer = millis();
+uint32_t newFileTimer = millis();
+
+const int logInterval = 1000; // One second. 
+const int newFileInterval = 300000; // Five minutes. 
 
 /*** 
  File Stuff 
 ***/
 File currentFile;
+
+unsigned long int currentFileNum = 0; 
 
 
 /*** 
@@ -35,13 +42,22 @@ Adafruit_ISM330DHCX ism;
 int led = LED_BUILTIN;
 int diff = -7;
 
+const int RED[3]   = {1, 0, 0};
+const int GREEN[3] = {0, 1, 0};
+const int BLUE[3]  = {0, 0, 1};
 
+const int RGB_PINS[3] = {11, 12, 13};
 
 void setup() {
   Serial.begin(1115200);
   delay(5000);
   Serial.println("===== Welcome to the Real Deal ===== ");
   Serial.println();
+
+  for(int i = 0; i < 3; i++){
+    pinMode(RGB_PINS[i], OUTPUT);
+  }
+
 
   /***
    IMPORTANT! 
@@ -98,7 +114,8 @@ void setup() {
    Creating Initial file. 
    - Named FILE_000 so we can increment the file number.
   ***/
-  currentFile = SD.open("FILE_000.CSV", FILE_WRITE);
+  currentFile = SD.open("FILE_0.CSV", FILE_WRITE);
+  currentFileNum += 1; 
   if(!currentFile) {
     halt(F("Failed create open log file!"));
   }
@@ -114,13 +131,7 @@ void setup() {
   ***/
   setup_gps();
 
-
-  /***
-  Setting up onboard LED. 
-   - Will change to be a GPS FIX LED,
-   - and a RGB LED later.
-  ***/
-  pinMode(led, OUTPUT);
+  set_RGB_light(GREEN);  
 
   delay(10000);  // Give the board some time to rest. 
   Serial.println("Let's Go!");
@@ -135,8 +146,8 @@ void loop() {
     GPS.parse(GPS.lastNMEA());
   }
 
-  if (millis() - timer > 5000) {
-    timer = millis(); // reset the timer
+  if (millis() - logTimer > logInterval) {
+    logTimer = millis(); // reset the timer
 
     sensors_event_t accel, gyro, temp;
     ism.getEvent(&accel, &gyro, &temp);
@@ -186,6 +197,16 @@ void loop() {
       Serial.println("No fix.");
       currentFile.println();
     }
+
+    if(millis() - newFileTimer > newFileInterval) {
+      newFileTimer = millis(); 
+
+      currentFile.close(); // Close current file
+      currentFile = SD.open("FILE_" + String(currentFileNum) + ".csv", FILE_WRITE); // Create a new file
+      currentFile.println("time_since_start,bme_temp,bme_alt,uv,ism_temp,acc_x,acc_y,acc_z,gps_time,latitude,longitude,gps_alt,speed,sats");
+      currentFileNum += 1; // Increment the file number.
+    }
+
   }
 }
 
@@ -193,10 +214,10 @@ void halt(const __FlashStringHelper *error){
   Serial.print(" - Error: ");
   Serial.println(error);
   while(1) {
-    digitalWrite(led, HIGH);
-    delay(100);
-    digitalWrite(led, LOW);
-    delay(100);
+    set_RGB_light(RED);
+    delay(250);
+    set_RGB_light(BLUE);
+    delay(250);
   }
 }
 
@@ -239,4 +260,10 @@ String get_time(){
   String time = String(hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
 
   return time;
+}
+
+void set_RGB_light(const int color[3]){
+  for(int i = 0; i < 3; i++) {
+    digitalWrite(RGB_PINS[i], color[i]);
+  }
 }
