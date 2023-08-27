@@ -42,6 +42,9 @@ That's perfection.
 
 I think you can tell what Feather we used. 
 
+Due to my lack of foresight we used a adalogger 32uf. I didn't put in the order on time so we weren't able to get the cool RP2040. 
+So if you are reading this in the future, PURCHASE THOUSANDS OF RP2040 BOARDS. They are really cool. 
+
 ### Sensors
 
 Nothing too extreme here. Some basic things like tempature, humidity, and altitude. (All done by the [BMP388](https://www.adafruit.com/product/4816) BTW) \
@@ -55,8 +58,10 @@ All in all, we will be collecting Temperature inside the box, Altitude, G-Forces
 
 ### Software
 Now here's my specialty. 
-(If your reading this before we actually finished the software, then enjoy this link)\
-[Link.](https://xkcd.com/1170/)
+
+Due to my stupidity, we had to end up using C# for the payload project. Not a terrible outcome, but not the best either. 
+
+Now, for those familiar with VCS, or GItHub, you will notice that I have three branches. 
 
 
 
