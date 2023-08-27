@@ -1,4 +1,4 @@
-# Payload_Spring2023
+  # Payload_Spring2023
 
 Code for CAC's Payload in Spring of 2023
 
@@ -62,6 +62,26 @@ Now here's my specialty.
 Due to my stupidity, we had to end up using C# for the payload project. Not a terrible outcome, but not the best either. 
 
 Now, for those familiar with VCS, or GItHub, you will notice that I have three branches. 
+The names should be intuitve, yet you may find that the code that was set up 11,000 feet into the air was the DEBUGGING branch.
+
+Now, there is many ways I could explain away such an atrocity, but take a look for yourself at the Debuuging and main braches. 
+I guess you can say I got bored, I finished the "main" (debugging) code, and then I decided to excercise some mental powers to create a 
+true class like program. This is the result of the main program. I wasn't able to finish before the project ended, but I still learned a lot.
+
+There were two main ideas I was trying to accomplish with the new code. 
+
+1. Make the code more readable.
+2. Easier to debug.
+3. More resistant to failure.
+
+I'll go through these ideas more thoroughly below. 
+
+#### Increasing Readability
+Just look at the code for the Debugging branch. It looks, tastes, smells, feels, like a train wreck.
 
 
+#### Debug
+THis is closely tied to the idea above. Debuggin something like the software in the debugging branch is a nightmare. One semicolon, one + 1. 
 
+
+#### Failure Resistant
