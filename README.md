@@ -66,13 +66,13 @@ Now here's my specialty.
 Due to my stupidity, we had to end up using C# for the payload project. Not a terrible outcome, but not the best either. 
 
 Now, for those familiar with VCS, or GitHub, you will notice that I have three branches. 
-The names should be intuitive, yet you may find that the code that was set up 11,000 feet into the air was the DEBUGGING branch.
+The names should be self-explanatory, yet the software that was sent up 110,000 feet into the air was the code on the _DEBUGGING_ branch.
 
 Now, there is many ways I could explain away such an atrocity but take a look for yourself at the Debugging and main branches. 
-I guess you can say I got bored, I finished the "main" (debugging) code, and then I decided to excercise some mental powers to create a 
-true class like program. This is the result of the main program. I couldn’t finish before the project ended, but I still learned a lot.
+I guess you can say I got bored. I finished the original (debugging) code, and then I decided to excercise some mental powers to create a 
+true class like program. This is the result of the main branch program. I couldn’t finish before the project ended, but I still learned a lot.
 
-There were two main ideas I was trying to accomplish with the new code. 
+There were three main ideas I was trying to accomplish with the new code. 
 
 1. Make the code more readable.
 2. Easier to debug.
@@ -86,16 +86,16 @@ Just look at the code for the Debugging branch. It looks, tastes, smells, feels,
 
 #### Debug
 This is closely tied to the idea above. Debugging something like the software in the debugging branch is a nightmare. One semicolon, one + 1, one
- tiny logical error and you're screwed. We needed a better system. 
+tiny logical error and you're screwed. We needed a better system. 
 
 
 #### Failure Resistant
 Oh the bliss that software companies have. They (usually) only have to deal with problems such as corrupted memory, low latency, and the occasional cable error. 
 
-Not so much when you're setting a 3-pound box up 110 thousand feet into the air. Wires are unplugged! Friction locks break (as I learned all to painfully in the Fall 2022 semester...) and wires are unplugged. JB-Weld tears foam, PCBs shatter, and worst of all, wires become unplugged. Must I explain more? 
+Not so much when you're setting a 3-pound box up 110 thousand feet into the air. Wires are unplugged! Friction locks break (as I learned all to painfully in the Fall 2022 semester...), JB-Weld tears foam, PCBs shatter, and worst of all, wires become unplugged. Must I explain more? 
 
-The software in the debugging branch is a total freight train. It'll get the job done and it'll get it done fast. However, place on obstacle in its path, and it will 
-totally de-rail. The software is an idiot, blindly following orders with no thought into what is happening. There is a terrifying lack of redundancy checks and error checks.
+The origional software is a total freight train. It'll get the job done and it'll get it done fast. However, place on obstacle in its path, and it will 
+totally de-rail. The software is an idiot, blindly following orders with no thought into what is happening. There is a terrifying lack of redundancy checks and error avoidince systems.
 
 The goal of the new system was to be more intelligent. 
 
