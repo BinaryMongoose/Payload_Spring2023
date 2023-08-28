@@ -65,7 +65,7 @@ Now here's my specialty.
 
 Due to my stupidity, we had to end up using C# for the payload project. Not a terrible outcome, but not the best either. 
 
-Now, for those familiar with VCS, or GitHub, you will notice that I have three branches. 
+Now, for those familiar with VCS, or GitHub, you will notice that I have 2 branches. 
 The names should be self-explanatory, yet the software that was sent up 110,000 feet into the air was the code on the _DEBUGGING_ branch.
 
 Now, there is many ways I could explain away such an atrocity but take a look for yourself at the Debugging and main branches. 
